@@ -1,9 +1,13 @@
 nav {
 	display: inline;
-	margin-left: 10px;
-	margin-right: 10px;
 }
 
-body {
-	background-color: blue;
+nav a {
+	margin-left: 20px;
+	margin-right: 20px;
+	color: blue;
+}
+
+.selected {
+	font-weight: bold;
 }

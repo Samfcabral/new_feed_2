@@ -1,18 +1,32 @@
 
 var express = require("express");
-
 var app = express();
 var bodyParser = require("body-parser");
-
-var articles = [{title: "A New Hope", content: "It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire’s ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire planet. Pursued by the Empire’s sinister agents, Princess Leia races home aboard her starship, custodian of the stolen plans that can save her people and restore freedom to the galaxy…."},
-				{title: "Return of the Jedi", content: "It is a dark time for the Rebellion. Although the Death Star has been destroyed, Imperial troops have driven the Rebel forces from their hidden base and pursued them across the galaxy. Evading the dreaded Imperial Starfleet, a group of freedom fighters led by Luke Skywalker has established a new secret base on the remote ice world of Hoth. The evil lord Darth Vader, obsessed with finding young Skywalker, has dispatched thousands of remote probes into the far reaches of space…."},
-				{title: "Empire Strikes Back", content: "Turmoil has engulfed the Galactic Republic. The taxation of trade routes to outlying star systems is in dispute. Hoping to resolve the matter with a blockade of deadly battleships, the greedy Trade Federation has stopped all shipping to the small planet of Naboo. While the congress of the Republic endlessly debates this alarming chain of events, the Supreme Chancellor has secretly dispatched two Jedi Knights, the guardians of peace and justice in the galaxy, to settle the conflict...."}];
+var pg = require("pg");
+var methodOverride = require("method-override");
+app.use(express.static(__dirname + '/public'))
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
+config =  {
+    database: "articles_app",
+    port: 5432,
+    host: "localhost"
+};
+
+
 app.get("/articles", function (req, res) {
-	res.render("articles/index", {articleList: articles});
+  pg.connect(config, function(err, client, done){
+        if (err) {
+            console.error("OOOPS!!! SOMETHING WENT WRONG!", err);
+        }
+        client.query("SELECT * FROM articles", function (err, result) {
+            done(); 
+            console.log(result.rows);  
+            res.render("articles/index", {articleList: result.rows});         
+        });
+    });
 });
 
 app.get("/", function (req, res) {
@@ -31,13 +45,85 @@ app.get("/contact", function (req, res) {
 	res.render("contact");
 });
 
+app.get("/articles/:id", function (req, res) {
+
+  pg.connect(config, function(err, client, done){
+        if (err) {
+             console.error("OOOPS!!! SOMETHING WENT WRONG!", err);
+        }
+        client.query("SELECT * FROM articles WHERE id=$1", [req.params.id], function (err, result) {
+            done(); 
+            console.log(result.rows);
+          if (result.rows.length) {
+            res.render("articles/show", {article: result.rows[0]});
+          } else {
+            // read about this http://expressjs.com/api.html#res.status
+            res.status(404).send("Article Not Found");
+          }      
+        });
+
+    });
+});
+
 app.post("/articles", function (req, res) {
-	console.log(req.body);
-	articles.push(req.body);
-	res.redirect("/articles");
+  var newArticle = req.body.article;
+  pg.connect(config, function(err, client, done){
+      if (err) {
+           console.error("OOOPS!!! SOMETHING WENT WRONG!", err);
+      }
+      client.query("INSERT INTO articles (title, content) VALUES ($1, $2) RETURNING *", [newArticle.title, newArticle.content], function (err, result) {
+          done(); 
+          console.log(result.rows);  
+          var article = result.rows[0];   
+          res.redirect("articles/" + article.id);      
+      });
+
+  });
+});
+
+app.delete("/articles/:id", function (req, res) {
+  var articleID = parseInt(req.params.id);
+  var articleIndex = null;
+  for (var i = 0, notFound = true; i < articles.length && notFound; i+=1) {
+    if (articles[i].id == articleID) {
+      notFound = false;
+      bookIndex = i;
+    }
+  }
+  if (notFound) {
+    res.send(404).send("Book Not Found");
+  } else {
+    articles.splice(bookIndex, 1);
+    res.redirect("articles");
+  }
 });
 
 app.listen(3000, function () {
 	console.log("GO TO http://localhost:3000/");
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
