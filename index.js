@@ -15,6 +15,10 @@ app.get("/articles", function (req, res) {
 	res.render("articles/index", {articleList: articles});
 });
 
+app.get("/", function (req, res) {
+	res.render("index");
+})
+
 app.get("/articles/new", function (req, res) {
 	res.render("articles/new");
 });
