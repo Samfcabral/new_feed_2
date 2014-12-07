@@ -7,6 +7,8 @@ var methodOverride = require("method-override");
 app.use(express.static(__dirname + '/public'))
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
+
 app.set("view engine", "ejs");
 
 config =  {
@@ -75,55 +77,24 @@ app.post("/articles", function (req, res) {
           done(); 
           console.log(result.rows);  
           var article = result.rows[0];   
-          res.redirect("articles/" + article.id);      
+          res.redirect("articles");      
       });
 
   });
 });
 
 app.delete("/articles/:id", function (req, res) {
-  var articleID = parseInt(req.params.id);
-  var articleIndex = null;
-  for (var i = 0, notFound = true; i < articles.length && notFound; i+=1) {
-    if (articles[i].id == articleID) {
-      notFound = false;
-      bookIndex = i;
-    }
-  }
-  if (notFound) {
-    res.send(404).send("Book Not Found");
-  } else {
-    articles.splice(bookIndex, 1);
-    res.redirect("articles");
-  }
+  pg.connect(config, function(err, client, done){
+      if (err) {
+           console.error("OOOPS!!! SOMETHING WENT WRONG!", err);
+      }
+      client.query("DELETE FROM articles WHERE id = $1", [req.params.id], function (err, result) {
+          res.redirect("/articles");    
+          done();      
+      });
+      });
 });
 
 app.listen(3000, function () {
 	console.log("GO TO http://localhost:3000/");
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

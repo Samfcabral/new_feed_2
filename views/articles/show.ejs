@@ -1,0 +1,21 @@
+<!DOCTYPE>
+<html>
+<head>
+  <title>Article</title>
+</head>
+<body>
+  <div>
+    <h2>
+      <a href="/articles/<%= article.id %>"><%= article.title %></a>
+    </h2>
+    <div>
+      <%= article.content %>
+    </div>
+  </div>
+  <div>
+    <form action="/articles/<%= article.id %>?_method=DELETE" method="post">
+      <button>DELETE</button>
+    </form>
+  </div>
+</body>
+</html>

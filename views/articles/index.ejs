@@ -7,17 +7,17 @@
 <body>
 <nav>
 	<a href="/">Home</a>
-	<a href="/articles/" class="selected">Articles</a>
+	<a href="/articles" class="selected">Articles</a>
 	<a href="/articles/new">Add New</a>
-	<a href="/about/">About Us</a>
-	<a href="/contact/">Contact Us</a>
+	<a href="/about">About Us</a>
+	<a href="/contact">Contact Us</a>
 </nav>
 	<h1><b>Check out the latest articles</b></h1>
 	<p>Let the adventure begin!</p>
 	
 	<% articleList.forEach(function(article) { %>
 	<div>
-		<b><%= article.title %></b>
+		<b><a href="/articles/<%= article.id %>"><%= article.title %></a></b>
 	</div>
 	<div>
 		<ul>
